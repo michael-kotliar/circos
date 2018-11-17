@@ -7,6 +7,7 @@ import pandas as pd
 INDEX_COL = 2
 TARGET_COL = 7
 GENE_COL = 9
+COLOR_COL = 10
 
 
 def get_data(filename, index_col):
@@ -27,13 +28,15 @@ def normalize_args(args, skip_list=[]):
     return argparse.Namespace (**normalized_args)
 
 
-def get_refactored_data(data, genelist, target_col, gene_col):
+def get_refactored_data(data, genelist, target_col, gene_col, color_col):
     refactored_data = pd.DataFrame(index=data.index, columns=genelist)
     for gene in genelist:
         for data_index, data_row in data.iterrows():
             if gene in data_row[gene_col]:
                 refactored_data.loc[data_index, gene] = data_row[target_col]
     refactored_data.rename(index={item:item.replace(" ", "_").replace("/", "_or_") for item in refactored_data.index}, inplace=True)
+    refactored_data.reset_index(inplace=True)
+    refactored_data.insert(0, data.columns[COLOR_COL], data.iloc[:,COLOR_COL].tolist())
     return refactored_data
 
 
@@ -51,8 +54,8 @@ def main(argsl=None):
     args = normalize_args(args)
     data = get_data(args.data, INDEX_COL)
     genelist = get_genelist(data, GENE_COL)
-    refactored_data = get_refactored_data(data, genelist, TARGET_COL, GENE_COL)
-    refactored_data.to_csv(args.output, sep="\t", na_rep=0)
+    refactored_data = get_refactored_data(data, genelist, TARGET_COL, GENE_COL, COLOR_COL)
+    refactored_data.to_csv(args.output, sep="\t", na_rep=0, index=False)
 
 
 if __name__ == "__main__":
