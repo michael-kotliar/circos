@@ -37,9 +37,9 @@ def normalize_args(args, skip_list=[]):
     return argparse.Namespace (**normalized_args)
 
 
-def get_color(expr, min_logr, max_logr):
-    norm = matplotlib.colors.Normalize(vmin=min_logr, vmax=max_logr)
-    cmap = matplotlib.cm.get_cmap('hot')
+def get_color(expr, min_logr, max_logr, quantiles):
+    norm = matplotlib.colors.Normalize(vmin=quantiles.values[0], vmax=quantiles.values[1])
+    cmap = matplotlib.cm.get_cmap('plasma')
     rgba = cmap(norm(expr))
     return ",".join([str(i) for i in [int(rgba[0] * 255), int(rgba[1] * 255), int(rgba[2] * 255)]])
 
@@ -56,11 +56,16 @@ def get_refactored_data(data, genelist, expression_data, gene_col, color_col=2):
 
     min_logr = expression_data["LOGR"].min()
     max_logr = expression_data["LOGR"].max()
+    quantiles = expression_data.quantile([0.25, 0.75])
+    print("min_logr", min_logr)
+    print("max_logr", max_logr)
+    print("quantiles", quantiles)
+
 
     for gene in refactored_data.columns:
         gene_color = GENE_COLOR
         try:
-            gene_color = get_color(expression_data.loc[gene, "LOGR"], min_logr, max_logr)
+            gene_color = get_color(expression_data.loc[gene, "LOGR"], min_logr, max_logr, quantiles)
         except Exception:
             pass    
         color_list.append(gene_color)
