@@ -10,7 +10,7 @@ import matplotlib
 INDEX_COL = 1
 GENE_COL = 1
 COLOR_COL = 1
-GENE_COLOR = "100,100,100"
+GENE_COLOR = "255,255,255"
 
 
 def get_data(filename_data, filename_color, index_col, color_col):
@@ -38,7 +38,8 @@ def normalize_args(args, skip_list=[]):
 
 
 def get_color(expr, min_logr, max_logr, quantiles):
-    norm = matplotlib.colors.Normalize(vmin=quantiles.values[0], vmax=quantiles.values[1])
+    # norm = matplotlib.colors.Normalize(vmin=quantiles.values[0], vmax=quantiles.values[1])
+    norm = matplotlib.colors.Normalize(vmin=min_logr, vmax=max_logr)
     cmap = matplotlib.cm.get_cmap('plasma')
     rgba = cmap(norm(expr))
     return ",".join([str(i) for i in [int(rgba[0] * 255), int(rgba[1] * 255), int(rgba[2] * 255)]])
@@ -53,7 +54,7 @@ def get_refactored_data(data, genelist, expression_data, gene_col, color_col=2):
     refactored_data.rename(index={item:item.replace(" ", "_").replace("/", "_or_") for item in refactored_data.index}, inplace=True)
     color_list = []
 
-
+    expression_data = expression_data.loc[genelist,]
     min_logr = expression_data["LOGR"].min()
     max_logr = expression_data["LOGR"].max()
     quantiles = expression_data.quantile([0.25, 0.75])
